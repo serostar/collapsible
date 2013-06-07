@@ -52,6 +52,20 @@
 		<p>And this is the collapsible content</p>
 	</div>
 
+	<button id="button-destroy">Destroy</button>
 
+	<script>
+		$(function() {
+
+			//initialize plugin on document.ready
+			$('.collapsible').collapsible();
+
+			// destroy plugin on button click
+			$('#button-destroy').on('click', function() {
+				$('.collapsible').collapsible('destroy');
+			});
+
+		});
+	</script>
 </body>
 </html>
