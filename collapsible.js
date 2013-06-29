@@ -191,9 +191,6 @@
                     returns = instance[options].apply( instance, Array.prototype.slice.call( args, 1 ) );
                 }
 
-                // Allow instances to be destroyed via the 'destroy' method
-                if (options === 'destroy') {
-                  $.data(this, 'plugin_' + pluginName, null);
               }
           });
 
