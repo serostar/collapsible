@@ -5,7 +5,7 @@
  * Licensed under the MIT, GPL licenses.
  */
 
-;(function ($, window, document, undefined) {
+ ;(function ($, window, document, undefined) {
 
     // Defaults
     var pluginName = "collapsible";
@@ -23,15 +23,15 @@
     function Plugin(element, options) {
         this.element = $( element );
         var self = this,
-            dataOptions = {};
+        dataOptions = {};
 
         // Allow data-attr option setting
         if( this.element.is( "[data-config]" ) ){
             $.each( defaults, function( option ) {
 
                 var value = self.element.attr( "data-" + option.replace( /[A-Z]/g, function( c ) {
-                                return "-" + c.toLowerCase();
-                            }));
+                    return "-" + c.toLowerCase();
+                }));
 
                 if ( value !== undefined ) {
                     if( value === "true" || value === "false" ){
@@ -76,19 +76,19 @@
             var self = this;
 
             this.element
-                .on( "expand", this.expand )
-                .on( "collapse", this.collapse )
-                .on( "toggle", this.toggle );
+            .on( "expand", this.expand )
+            .on( "collapse", this.collapse )
+            .on( "toggle", this.toggle );
 
             this.header
-                .on( "mouseup", function(){
+            .on( "mouseup", function(){
+                self.element.trigger( "toggle" );
+            })
+            .on( "keyup", function( e ){
+                if( e.which === 13 || e.which === 32 ){ 
                     self.element.trigger( "toggle" );
-                })
-                .on( "keyup", function( e ){
-                    if( e.which === 13 || e.which === 32 ){ 
-                        self.element.trigger( "toggle" );
-                    }
-                });
+                }
+            });
 
             if( this.options.collapsed ){
                 this.collapse();
@@ -191,8 +191,7 @@
                     returns = instance[options].apply( instance, Array.prototype.slice.call( args, 1 ) );
                 }
 
-              }
-          });
+            });
 
             // If the earlier cached method
             // gives a value back return the value,
