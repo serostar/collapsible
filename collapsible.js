@@ -5,7 +5,18 @@
  * Licensed under the MIT, GPL licenses.
  */
 
- ;(function ($, window, document, undefined) {
+// the semi-colon before function invocation is a safety net against concatenated
+// scripts and/or other plugins which may not be closed properly.
+;(function ($, window, document, undefined) {
+
+    // undefined is used here as the undefined global variable in ECMAScript 3 is
+    // mutable (ie. it can be changed by someone else). undefined isn't really being
+    // passed in so we can ensure the value of it is truly undefined. In ES5, undefined
+    // can no longer be modified.
+
+    // window and document are passed through as local variable rather than global
+    // as this (slightly) quickens the resolution process and can be more efficiently
+    // minified (especially when both are regularly referenced in your plugin).
 
     // Defaults
     var pluginName = "collapsible";
@@ -19,7 +30,8 @@
         collapsed: true
     };
 
-    // plugin constructor
+
+    // The actual plugin constructor
     function Plugin(element, options) {
         this.element = $( element );
         var self = this,
@@ -50,8 +62,21 @@
         this.init();
     }
 
-
     Plugin.prototype = {
+
+        init: function () {
+            this.header = this.element.children().eq( 0 );
+            this.content = this.header.next();
+            this._addAttributes();
+            this._bindEvents();
+        },
+
+        destroy: function () {
+            this._removeAttributes();
+            this._unBindEvents();
+            self.collapsed = true;
+        },
+
         _addAttributes: function(){
             this.element.addClass( this.options.pluginClass );
             this.header.addClass( this.options.headerClass );
@@ -63,12 +88,12 @@
         },
 
         _removeAttributes: function() {
-            this.element.removeClass( this.options.pluginClass );
+            //this.element.removeClass( this.options.pluginClass );
             this.header.removeClass( this.options.headerClass );
             this.header.removeAttr( "title");
             this.header.removeAttr( "role" );
             this.header.removeAttr( "aria-expanded" );
-            this.header.removeAttr( "tabindex" );            
+            this.header.removeAttr( "tabindex" );
             this.content.removeClass( this.options.contentClass );
         },
 
@@ -128,76 +153,38 @@
             var self = $.data( this, "plugin_" + pluginName );
             self.element.trigger( self.collapsed ? "expand" : "collapse" );
         },
-
-    } 
-
-    Plugin.prototype.init = function () {
-        this.header = this.element.children().eq( 0 );
-        this.content = this.header.next();
-        this._addAttributes();
-        this._bindEvents();
     };
 
-    Plugin.prototype.destroy = function () {
-        this._removeAttributes();
-        this._unBindEvents();        
-    };
-
-    // You don't need to change something below:
     // A really lightweight plugin wrapper around the constructor,
-    // preventing against multiple instantiations and allowing any
-    // public function (ie. a function whose name doesn't start
-    // with an underscore) to be called via the jQuery plugin,
-    // e.g. $(element).defaultPluginName('functionName', arg1, arg2)
-    $.fn[pluginName] = function ( options ) {
+    // preventing against multiple instantiations
+    $.fn[pluginName] = function (options) {
         var args = arguments;
 
-        // Is the first parameter an object (options), or was omitted,
-        // instantiate a new instance of the plugin.
-        if (options === undefined || typeof options === 'object') {
-            return this.each(function () {
+        return this.each(function () {
+            var _plugin = "plugin_" + pluginName,
+            data = $.data(this, _plugin),
+            method = data ? data[options] : '';
 
-                // Only allow the plugin to be instantiated once,
-                // so we check that the element has no plugin instantiation yet
-                if (!$.data(this, 'plugin_' + pluginName)) {
+            // Instance the plugin
+            if (!data) {
+                $.data(this, _plugin, (data = new Plugin(this, options)));
 
-                    // if it has no instance, create a new one,
-                    // pass options to our plugin constructor,
-                    // and store the plugin instance
-                    // in the elements jQuery data object.
-                    $.data(this, 'plugin_' + pluginName, new Plugin( this, options ));
-                }
-            });
+            // Tests that there's already a plugin-instance
+            // and checks that the requested public method exists
+            // performs a method passing parameters if necessary
+        } else if (data instanceof Plugin && typeof method === 'function') {
+            method.apply(data, Array.prototype.slice.call(args, 1));
 
-        // If the first parameter is a string and it doesn't start
-        // with an underscore or "contains" the `init`-function,
-        // treat this as a call to a public method.
-    } else if (typeof options === 'string' && options[0] !== '_' && options !== 'init') {
+            // Allow instances to be destroyed via the 'destroy' method
+            if (options === 'destroy') {
+                $.data(this, 'plugin_' + pluginName, null);
+            }
 
-            // Cache the method call
-            // to make it possible
-            // to return a value
-            var returns;
-
-            this.each(function () {
-                var instance = $.data(this, 'plugin_' + pluginName);
-
-                // Tests that there's already a plugin-instance
-                // and checks that the requested public method exists
-                if (instance instanceof Plugin && typeof instance[options] === 'function') {
-
-                    // Call the method of our plugin instance,
-                    // and pass it the supplied arguments.
-                    returns = instance[options].apply( instance, Array.prototype.slice.call( args, 1 ) );
-                }
-
-            });
-
-            // If the earlier cached method
-            // gives a value back return the value,
-            // otherwise return this to preserve chainability.
-            return returns !== undefined ? returns : this;
+        // Get the error if the method does not exist or is private
+        } else if (!method || options.charAt(0) === '_') {
+            $.error('Method ' + options + ' does not exist on jQuery.' + pluginName);
         }
-    };
+    });
+};
 
 })(jQuery, window, document);

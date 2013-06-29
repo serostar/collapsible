@@ -53,6 +53,7 @@
 	</div>
 
 	<button id="button-destroy">Destroy</button>
+	<button id="button-init">Re-Init</button>
 
 	<script>
 		$(function() {
@@ -63,6 +64,11 @@
 			// destroy plugin on button click
 			$('#button-destroy').on('click', function() {
 				$('.collapsible').collapsible('destroy');
+			});
+
+			// re-collapse
+			$('#button-init').on('click', function() {
+				$('.collapsible').collapsible();
 			});
 
 		});
